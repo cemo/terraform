@@ -1,6 +1,8 @@
 package config
 
 import (
+	"bytes"
+	"compress/gzip"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -72,6 +74,7 @@ func Funcs() map[string]ast.Function {
 		"distinct":     interpolationFuncDistinct(),
 		"element":      interpolationFuncElement(),
 		"file":         interpolationFuncFile(),
+		"gzipbase64":   interpolationFuncGzipBase64(),
 		"matchkeys":    interpolationFuncMatchKeys(),
 		"floor":        interpolationFuncFloor(),
 		"format":       interpolationFuncFormat(),
@@ -1318,6 +1321,28 @@ func interpolationFuncBase64Sha512() ast.Function {
 			shaSum := h.Sum(nil)
 			encoded := base64.StdEncoding.EncodeToString(shaSum[:])
 			return encoded, nil
+		},
+	}
+}
+
+func interpolationFuncGzipBase64() ast.Function {
+	return ast.Function{
+		ArgTypes:   []ast.Type{ast.TypeString},
+		ReturnType: ast.TypeString,
+		Callback: func(args []interface{}) (interface{}, error) {
+			s := args[0].(string)
+			var b bytes.Buffer
+			gz := gzip.NewWriter(&b)
+			if _, err := gz.Write([]byte(s)); err != nil {
+				return "", fmt.Errorf("failed to gzip raw data: '%s'", s)
+			}
+			if err := gz.Flush(); err != nil {
+				return "", fmt.Errorf("failed to gzip raw data: '%s'", s)
+			}
+			if err := gz.Close(); err != nil {
+				return "", fmt.Errorf("failed to gzip raw data: '%s'", s)
+			}
+			return base64.StdEncoding.EncodeToString(b.Bytes()), nil
 		},
 	}
 }

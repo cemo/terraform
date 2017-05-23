@@ -2249,6 +2249,18 @@ func TestInterpolateFuncBase64Sha512(t *testing.T) {
 	})
 }
 
+func TestInterpolateFuncGzip(t *testing.T) {
+	testFunction(t, testFunctionConfig{
+		Cases: []testFunctionCase{
+			{
+				`${gzipbase64("test")}`,
+				"H4sIAAAAAAAA/ypJLS4BAAAA//8BAAD//wx+f9gEAAAA",
+				false,
+			},
+		},
+	})
+}
+
 func TestInterpolateFuncMd5(t *testing.T) {
 	testFunction(t, testFunctionConfig{
 		Cases: []testFunctionCase{
